@@ -10,7 +10,7 @@ use GuzzleHttp\Client;
 
 class ShowCommand extends Command {
 
-    const MAX_LENGTH = 130; //Largo maximo de caracteres para que no se rompa la tabla
+    const LINE_MAX_LENGTH = 130;
 
     protected function configure() {
         $this
@@ -29,7 +29,17 @@ class ShowCommand extends Command {
         $plot = $input->getOption('fullPlot') ? 'full' : 'short';
 
         $client = new Client();
-        $response = $client->request('GET', "http://www.omdbapi.com/?apikey=c3c73e8d&t={$movieName}&plot={$plot}");
+
+        $queryParams = array(
+            'apikey' => 'c3c73e8d',
+            't' => $movieName,
+            'plot' => $plot
+        );
+
+        $query = http_build_query($queryParams);
+        
+
+        $response = $client->request('GET', "http://www.omdbapi.com/?{$query}");
 
         $data = json_decode($response->getBody(), true);
 
@@ -55,7 +65,7 @@ class ShowCommand extends Command {
             if (is_array($value)) {
                 continue;
             }
-            $parts = str_split($value, $this::MAX_LENGTH);
+            $parts = str_split($value, $this::LINE_MAX_LENGTH);
             foreach($parts as $part) {
                 $rows[] = [$key, $part];
             }
